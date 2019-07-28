@@ -4,26 +4,8 @@ __lua__
 -- catch phd hat
 -- by kirais
 
---[[
- to disable the preview script
- for testing, uncomment below:
-]]--
+ difficulty = 2
 
---disable_preview = true
-
-
---[[
- to set higher initial
- difficulty, set the difficulty
- variable (1..15, integer):
-]]--
-
--- difficulty = 2
-
---[[
- set all of your variables
- inside the init function!
-]]--
 function _init()
  -- these are required!
  name="catch phd hat"
@@ -50,6 +32,7 @@ function _init()
  py=0
  pdy=0
  paper_count=0
+ draw_paper=true
  
  -- hat
  hx=5+rnd(115)
@@ -76,6 +59,8 @@ function _init()
   remember that difficulty goes
   from 1 to 15.
  ]]--
+ 
+ paper_target=1+difficulty/5
  
  --[[
   use rnd to make the game
@@ -116,10 +101,14 @@ function _update60()
   return
  end
  
- update_paper()
+ if draw_paper then
+ 	update_paper()
+ end
+ 
  if draw_hat then
   update_hat()
  end
+ 
  update_player(dt)
 end
 
@@ -157,12 +146,13 @@ function update_player(dt)
  then
   pdy=0
   paper_count+=1
+  draw_paper=false
+  if paper_count<paper_target
+  then
+   init_paper()
+  else draw_hat=true
+  end
  end
- 
- if paper_count>=1 then
-  draw_hat=true
- end
- 
  -- hat collision
  if y>hy 
  	and y<hy+10 
@@ -197,7 +187,9 @@ function _draw()
  end
  
  --paper
- spr(8,px,py)
+ if draw_paper then
+  spr(8,px,py)
+ end
  --hat
  if draw_hat then
   spr(7,hx,hy)
@@ -217,6 +209,13 @@ function update_hat()
   hdy+=3*1/60
   hy+=hdy
  end
+end
+
+function init_paper()
+ px=5+rnd(115)
+ py=0
+ pdy=0
+ draw_paper=true
 end
 
 function update_paper()
