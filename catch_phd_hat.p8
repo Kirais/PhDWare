@@ -1,14 +1,14 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
--- catch phd hat
+-- publish or perish
 -- by kirais
 
  difficulty = 2
 
 function _init()
  -- these are required!
- name="catch phd hat"
+ name="publish or perish"
  made_by="kirais"
  oneliner="catch! ⬅️ ➡️"
  
@@ -32,11 +32,13 @@ function _init()
  
  -- paper
  paper = {
+  spr=8,
   active=true,
- 	x=5+rnd(90),
+ 	x=5+rnd(115),
  	y=0,
  	vy=0,
  	count=0,
+ 	ground=false,
  	grab=false,
  	target=1+difficulty/5
  }
@@ -55,7 +57,7 @@ function _init()
  -- pc
  pc = {
   spr=9,
-  x=100,
+  x=10+rnd(110),
   y=88
  }
  
@@ -215,7 +217,7 @@ function _draw()
  
  --paper
  if paper.active then
-  spr(8,paper.x,paper.y)
+  spr(paper.spr,paper.x,paper.y)
  end
  
  --player
@@ -223,15 +225,8 @@ function _draw()
  
  if status == "won" then
   win_message()
- elseif paper.y>96 then
+ elseif paper.ground then
   lost_message()
- end
-end
-
-function update_hat()
- if not hat.col then
-  hat.vy+=3*1/60
-  hat.y+=hat.vy
  end
 end
 
@@ -249,6 +244,12 @@ function update_paper()
  else
   paper.vy+=3*1/60
   paper.y+=paper.vy
+ end
+ 
+ if paper.y >= 92 then
+  paper.y=92
+  paper.vy=0
+  paper.ground=true
  end
 end
 
