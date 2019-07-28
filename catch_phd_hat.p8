@@ -32,6 +32,9 @@ function _init()
  dim = daytime>0 and rnd()>0.7
  pow = 0
  
+ c_r = 0
+ c_rl = 100
+ 
  -- paper
  paper = {
   spr=8,
@@ -63,6 +66,11 @@ function _init()
   y=floor
  }
  
+ -- net
+ net = {
+  x=56,
+  y=58
+ }
  
 end
 
@@ -179,6 +187,11 @@ function update_player(dt)
    submitted = true
    status = "won"
    sfx(3)
+   
+   -- also some secrets for that picoware flair
+   if(hmm) net.y -= 1
+   if(bye) net.x += 1
+   
   end
  end
 end
@@ -260,54 +273,17 @@ function update_paper()
 end
 
 function win_message()
- for x=0,16 do
-  for y=0,16 do 
-   spr(0, x*8, y*8)
-  end
- end
-
- for y=4,4+4 do
-		spr(1, 1*8, y*8)
- end
- 
- for y=4,6,2 do
- 	spr(1, 2*8, y*8)
- end
- 
- for y=4,4+2 do
- 		spr(1, 3*8, y*8)
- end
- 
- for x=5,10,2 do
-  for y=4,4+4 do
- 		spr(1, x*8, y*8)
-  end
- end
- 
-	spr(1, 6*8, 6*8)
- 
- for y=4,9,4 do
- 		spr(1, 10*8, y*8)
- end
- 
- for y=5,5+3 do
- 	spr(1, 11*8, y*8)
- end
- 
- for y=4,4+2 do
- 	spr(1, 13*8, y*8)
- end
- 
- spr(1, 13*8, 8*8)
- 
+ c_r += 4
+ circ(pc.x+4, pc.y-4, c_r - 16, 8)
+ circ(pc.x+4, pc.y-4, c_r - 8, 9)
+ circ(pc.x+4, pc.y-4, c_r, 10)
 end
 
 function lost_message()
- for x=0,16 do
-  for y=1,16 do 
-   spr(1, x*8, 128-y*8)
-  end
- end
+ c_rl -= 4
+ circ(paper.x+4, paper.y-4, c_rl - 16, 8)
+ circ(paper.x+4, paper.y-4, c_rl - 8, 9)
+ circ(paper.x+4, paper.y-4, c_rl, 10)
 end
 
 function round(n)
