@@ -40,14 +40,6 @@ function _init()
  	grab=false,
  	target=1+difficulty/5
  }
- -- hat
- hat = {
-  active=false,
-  x=5+rnd(115),
-  y=0,
-  vy=0,
-  col=false
- }
  
  -- player
  player = {
@@ -119,10 +111,6 @@ function _update60()
  	update_paper()
  end
  
- if hat.active then
-  update_hat()
- end
- 
  update_player(dt)
 
 end
@@ -180,17 +168,6 @@ function update_player(dt)
   else hat.active=true
   end
  end
- -- hat collision
- if player.y>hat.y 
- 	and player.y<hat.y+10 
- 	and player.x>hat.x-10
- 	and player.x<hat.x+10
- then
-  hat.vy=0
-  hat.col=true
-  status="won"
- else hat.col=false
- end
  
  if paper.grab then
   if player.x >= pc.x 
@@ -238,22 +215,15 @@ function _draw()
  
  --paper
  if paper.active then
-  if paper.grab then
-   spr(8,round(player.x-4), round(player.y-10))
-  else
-   spr(8,paper.x,paper.y)
-  end
+  spr(8,paper.x,paper.y)
  end
- --hat
- if hat.active then
-  spr(7,hat.x,hat.y)
- end
+ 
  --player
  spr(player.frame, round(player.x - 4), round(player.y - 4), 1,1, player.flip)
  
  if status == "won" then
   win_message()
- elseif hat.y>96 then
+ elseif paper.y>96 then
   lost_message()
  end
 end
@@ -273,8 +243,13 @@ function init_paper()
 end
 
 function update_paper()
- paper.vy+=3*1/60
- paper.y+=paper.vy
+ if paper.grab then
+  paper.x=round(player.x-4)
+  paper.y=round(player.y-10)
+ else
+  paper.vy+=3*1/60
+  paper.y+=paper.vy
+ end
 end
 
 function win_message()
