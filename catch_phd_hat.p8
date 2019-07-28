@@ -230,9 +230,9 @@ end
 
 function lost_message()
  cls(0)
- spr(paper.frame, 63+2*8,63)
+ spr(paper.frame, 7*8-1+2*8,63)
  player.frame = 20+flr(3*(2*t%1))
- spr(player.frame, 63, 63)
+ spr(player.frame, 7*8-1, 63)
 end
 
 function round(n)
@@ -1007,3 +1007,4 @@ __music__
 00 41424344
 03 3b3c4344
 03 3f3a397c
+
