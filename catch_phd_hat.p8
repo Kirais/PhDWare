@@ -40,13 +40,18 @@ function _init()
  
   status="won" / status="lost"
  ]]--
- status="won"
+ status="lost"
 
  t=0 
  mt=0
  
+ -- hat
+ hx=63
+ hy=0
+ hdy=0
+ 
  -- player
- x=10
+ x=63
  dx=0
  y=88
  dy=0
@@ -102,14 +107,20 @@ function _update60()
   return
  end
  
+ update_hat()
  update_player(dt)
 end
 
 function update_player(dt)
  dy+=12*1/60
  y+=dy
- 
  x+=dx
+ 
+ if dx>0 then
+  dx-=0.1
+ elseif dx<0 then
+  dx+=0.1
+ end
  
  -- floor collision 
  if y>88 then
@@ -126,6 +137,16 @@ function update_player(dt)
   x=115
  end
  
+ -- hat collision
+ if y>hy 
+ and y<hy+10 
+ and x>hx
+ and x<hx+10
+ then
+  hdy=0
+  status = "won"
+ end
+ 
  if btnp(⬅️) then
   dx=-2
  elseif btnp(➡️) then
@@ -137,10 +158,16 @@ end
 function _draw()
  cls(1)
  
+ --hat
+ spr(7,hx,hy)
  --player
  spr(frame,x,y)
 end
 
+function update_hat()
+ hdy+=3*1/60
+ hy+=hdy
+end
 --------------------------------
 --------------------------------
 --------------------------------
