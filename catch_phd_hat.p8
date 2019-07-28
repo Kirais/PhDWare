@@ -22,6 +22,7 @@ function _init()
  mt=0
  
  gravity = 640
+ submitted = false
  
  daytime = rnd()>0.5 and flr(rnd(2))+1 or 0
  hmm = rnd()>0.95
@@ -32,7 +33,7 @@ function _init()
  -- paper
  paper = {
   active=true,
- 	x=5+rnd(115),
+ 	x=5+rnd(90),
  	y=0,
  	vy=0,
  	count=0,
@@ -191,6 +192,14 @@ function update_player(dt)
  else hat.col=false
  end
  
+ if paper.grab then
+  if player.x >= pc.x 
+  and player.x <= pc.x + 7 
+  and player.y <= pc.y + 7 then
+   submitted = true
+   status = "won"
+  end
+ end
 end
 
 function _draw()
@@ -224,6 +233,9 @@ function _draw()
   end
  end
  
+ --pc
+ spr(pc.spr,pc.x,pc.y)
+ 
  --paper
  if paper.active then
   if paper.grab then
@@ -239,8 +251,6 @@ function _draw()
  --player
  spr(player.frame, round(player.x - 4), round(player.y - 4), 1,1, player.flip)
  
- --pc
- spr(pc.spr,pc.x,pc.y)
  if status == "won" then
   win_message()
  elseif hat.y>96 then
