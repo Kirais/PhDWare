@@ -26,13 +26,13 @@ __lua__
 ]]--
 function _init()
  -- these are required!
- name="jump over the obstacle"
- made_by="@szczm_"
- oneliner="jump! 🅾️"
+ name="catch phd hat"
+ made_by="kirais"
+ oneliner="catch! ⬅️ ➡️"
  
  -- add a personal touch ◆
- outer_frame_color=12
- inner_frame_color=7
+ outer_frame_color=10
+ inner_frame_color=9
 
  --[[
   set status variable to inform
@@ -67,10 +67,7 @@ function _init()
   it is run!
  ]]--
 
- -- obstacle
- ow=1+flr(rnd(3))
- oh=4-ow
- ox=240+flr(rnd(10))*8
+ 
 end
 
 function _update60()
@@ -108,63 +105,11 @@ function _update60()
 end
 
 function update_player(dt)  
- -- 1/60 because gravity does
- -- not change w/difficulty 😐
- dy+=12*1/60
- y+=dy
-
- -- if jelpi lost - bye bye.
- if (status=="lost") return
-
- -- floor collision 
- if y>88 then
-  dy=0
-  y=88
-  can_jump=true
- end
  
- -- jump detection
- if btnp(🅾️) and can_jump then
-  dy=-4
-  can_jump=false
-  sfx(0)
- end
-
- -- obstacle collision; "2" is
- -- additional "grace" margin 
- if  ox      +2 < 30+8
- and ox+ow*8 -2 > 30
- and 96-oh*8 +2 < y+8 then
-   sfx(1)
-   status="lost"
- end
 end
 
 function _draw()
  cls(1)
- 
- -- map
- local mx=mt%8 -- spr size
- 
- for x=0,16 do
-  for y=1,4 do
-   -- draw top
-   spr(0, x*8-mx, 32-y*8)
-   
-   -- draw bottom
-   spr(0, x*8-mx, 128-y*8)
-  end
- end
-  
- -- obstacle
- for x=0,ow-1 do
-  for y=1,oh do
-    spr(1, ox+x*8, 96-y*8)
-  end
- end
- 
- -- player
- spr(frame,30,y)
 end
 
 --------------------------------
