@@ -16,58 +16,47 @@ function _init()
  outer_frame_color=10
  inner_frame_color=9
 
- --[[
-  set status variable to inform
-  master cart about outcome:
- 
-  status="won" / status="lost"
- ]]--
  status="lost"
 
  t=0 
  mt=0
  
- -- paper
- px=5+rnd(115)
- py=0
- pdy=0
- paper_count=0
- draw_paper=true
+ gravity = 640
  
+ daytime = rnd()>0.5 and flr(rnd(2))+1 or 0
+ hmm = rnd()>0.95
+ bye = rnd()>0.95
+ dim = daytime>0 and rnd()>0.7
+ pow = 0
+ 
+ -- paper
+ paper = {
+  active=true,
+ 	x=5+rnd(115),
+ 	y=0,
+ 	vy=0,
+ 	count=0,
+ 	target=1+difficulty/5
+ }
  -- hat
- hx=5+rnd(115)
- hy=0
- hdy=0
- draw_hat=false
+ hat = {
+  active=false,
+  x=5+rnd(115),
+  y=0,
+  vy=0,
+  col=false
+ }
  
  -- player
- x=63
- dx=0
- y=88
- dy=0
- frame=2
- 
- col=false
- 
- --[[
-  you could use the difficulty
-  variable to change things
-  with difficulty. example:
-  
-  obstacle_count = difficulty/5
-  
-  remember that difficulty goes
-  from 1 to 15.
- ]]--
- 
- paper_target=1+difficulty/5
- 
- --[[
-  use rnd to make the game
-  a bit different each time
-  it is run!
- ]]--
-
+ player = {
+  x=63,
+  y=88,
+  vx=0,
+  vy=0,
+  ground=true,
+  frame=2,
+  flip=false
+ }
  
 end
 
@@ -87,7 +76,22 @@ function _update60()
  mt=t*80
  
  -- animation magic
- frame=2+flr(5*(2*t%1))
+ --frame=2+flr(5*(2*t%1))
+ 
+ -- "animation magic"
+ if player.ground then
+  player.frame = 2 + ((player.frame - 2) + abs(player.vx / 128))%4
+ else
+  if player.vy < -2 then
+   player.frame = 3
+  elseif player.vy < 0 then
+   player.frame = 4
+  elseif player.vy < 2 then
+   player.frame = 5
+  else
+   player.frame = 6
+  end
+ end
 
  --[[
   use transition_done to check
@@ -100,81 +104,106 @@ function _update60()
  if not transition_done then
   return
  end
- 
- if draw_paper then
+
+ if paper.active then
  	update_paper()
  end
  
- if draw_hat then
+ if hat.active then
   update_hat()
  end
  
  update_player(dt)
+
 end
 
 function update_player(dt)
- dy+=12*1/60
- y+=dy
- x+=dx
- 
- if dx>0 then
-  dx-=0.1
- elseif dx<0 then
-  dx+=0.1
+
+ if btn(⬅️) then
+  player.flip = true
+  player.vx = -60
+ end
+ if btn(➡️) then
+  player.flip = false
+  player.vx = 60
  end
  
- -- floor collision 
- if y>88 then
-  dy=0
-  y=88
+ -- move
+ player.x+=player.vx*dt
+ player.y+=player.vy*dt
+ player.x = mid(8, player.x, 119)
+
+ -- slow velocity
+ player.vx *= 0.9
+ player.vy += gravity * dt
+ 
+ -- if going past ground
+ if player.y >= 92 then
+  -- don't
+  player.y = 92
+  player.vy = 0
+  
+  player.ground = true
  end
  
  -- border collision 
- if x<5 then
-  dx=0
-  x=5
- elseif x>115 then
-  dx=0
-  x=115
+ if player.x<5 then
+  player.vx=0
+  player.x=5
+ elseif player.x>115 then
+  player.vx=0
+  player.x=115
  end
  
  -- paper collision
- if y>py 
- 	and y<py+10 
- 	and x>px-10
- 	and x<px+10
+ if player.y>paper.y 
+ 	and player.y<paper.y+10 
+ 	and player.x>paper.x-10
+ 	and player.x<paper.x+10
  then
-  pdy=0
-  paper_count+=1
-  draw_paper=false
-  if paper_count<paper_target
+  paper.vy=0
+  paper.count+=1
+  paper.active=false
+  if paper.count<paper.target
   then
    init_paper()
-  else draw_hat=true
+  else hat.active=true
   end
  end
  -- hat collision
- if y>hy 
- 	and y<hy+10 
- 	and x>hx-10
- 	and x<hx+10
+ if player.y>hat.y 
+ 	and player.y<hat.y+10 
+ 	and player.x>hat.x-10
+ 	and player.x<hat.x+10
  then
-  hdy=0
-  col=true
+  hat.vy=0
+  hat.col=true
   status="won"
- else col=false
- end
- 
- if btnp(⬅️) then
-  dx=-2
- elseif btnp(➡️) then
-  dx=2
+ else hat.col=false
  end
  
 end
 
 function _draw()
  cls(1)
+ 
+ if daytime == 0 then
+  cls(12)
+  circfill(96, 24, 12, 10)
+ elseif daytime == 1 then
+  cls(0)
+  circfill(96, 24, 12, 7)
+  circfill(86, 24, 12, 0)
+ elseif daytime == 2 then
+  cls(2)
+  circfill(96, 64, 12, 14)
+ end
+ 
+ if dim then
+  for i = 0, 15 do
+   pal(i, daytime==1 and 13 or 0)
+  end
+ end
  
  -- map
  local mx=mt%8 -- spr size
@@ -187,40 +216,40 @@ function _draw()
  end
  
  --paper
- if draw_paper then
-  spr(8,px,py)
+ if paper.active then
+  spr(8,paper.x,paper.y)
  end
  --hat
- if draw_hat then
-  spr(7,hx,hy)
+ if hat.active then
+  spr(7,hat.x,hat.y)
  end
  --player
- spr(frame,x,y)
+ spr(player.frame, round(player.x - 4), round(player.y - 4), 1,1, player.flip)
  
  if status == "won" then
   win_message()
- elseif hy>96 then
+ elseif hat.y>96 then
   lost_message()
  end
 end
 
 function update_hat()
- if not col then
-  hdy+=3*1/60
-  hy+=hdy
+ if not hat.col then
+  hat.vy+=3*1/60
+  hat.y+=hat.vy
  end
 end
 
 function init_paper()
- px=5+rnd(115)
- py=0
- pdy=0
- draw_paper=true
+ paper.x=5+rnd(115)
+ paper.y=0
+ paper.vy=0
+ paper.active=true
 end
 
 function update_paper()
- pdy+=3*1/60
- py+=pdy
+ paper.vy+=3*1/60
+ paper.y+=paper.vy
 end
 
 function win_message()
@@ -272,6 +301,10 @@ function lost_message()
    spr(1, x*8, 128-y*8)
   end
  end
+end
+
+function round(n)
+ return flr(n+0.5)
 end
 --------------------------------
 --------------------------------
