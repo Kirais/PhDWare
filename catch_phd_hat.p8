@@ -161,6 +161,16 @@ end
 function _draw()
  cls(1)
  
+ -- map
+ local mx=mt%8 -- spr size
+ 
+ for x=0,16 do
+  for y=1,4 do 
+   -- draw bottom
+   spr(0, x*8-mx, 128-y*8)
+  end
+ end
+ 
  --hat
  spr(7,hx,hy)
  --player
