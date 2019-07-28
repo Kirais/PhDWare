@@ -40,13 +40,13 @@ function _init()
  
   status="won" / status="lost"
  ]]--
- status="lost"
+ status="won"
 
  t=0 
  mt=0
  
  -- hat
- hx=63
+ hx=5+rnd(115)
  hy=0
  hdy=0
  
@@ -56,6 +56,8 @@ function _init()
  y=88
  dy=0
  frame=2
+ 
+ col=false
  
  --[[
   you could use the difficulty
@@ -139,12 +141,13 @@ function update_player(dt)
  
  -- hat collision
  if y>hy 
- and y<hy+10 
- and x>hx
- and x<hx+10
+ 	and y<hy+10 
+ 	and x>hx-10
+ 	and x<hx+10
  then
   hdy=0
-  status = "won"
+  col=true
+ else col=false
  end
  
  if btnp(⬅️) then
@@ -165,8 +168,14 @@ function _draw()
 end
 
 function update_hat()
- hdy+=3*1/60
- hy+=hdy
+ if not col then
+  hdy+=3*1/60
+  hy+=hdy
+ end
+ 
+ if hy>96 then
+  status="lost"
+ end
 end
 --------------------------------
 --------------------------------
