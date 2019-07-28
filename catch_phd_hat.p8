@@ -46,6 +46,8 @@ function _init()
  mt=0
  
  -- player
+ x=10
+ dx=0
  y=88
  dy=0
  frame=2
@@ -84,7 +86,6 @@ function _update60()
  ]]--
  t+=dt
  mt=t*80
- ox-=dt*80
  
  -- animation magic
  frame=2+flr(5*(2*t%1))
@@ -104,12 +105,40 @@ function _update60()
  update_player(dt)
 end
 
-function update_player(dt)  
+function update_player(dt)
+ dy+=12*1/60
+ y+=dy
+ 
+ x+=dx
+ 
+ -- floor collision 
+ if y>88 then
+  dy=0
+  y=88
+ end
+ 
+ -- border collision 
+ if x<5 then
+  dx=0
+  x=5
+ elseif x>115 then
+  dx=0
+  x=115
+ end
+ 
+ if btnp(⬅️) then
+  dx=-2
+ elseif btnp(➡️) then
+  dx=2
+ end
  
 end
 
 function _draw()
  cls(1)
+ 
+ --player
+ spr(frame,x,y)
 end
 
 --------------------------------
