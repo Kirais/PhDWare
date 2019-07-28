@@ -10,46 +10,35 @@ function _init()
  -- these are required!
  name="publish or perish"
  made_by="kirais"
- oneliner="catch! ⬅️ ➡️"
- 
+ oneliner="publish! ⬅️ ➡️"
+
  -- add a personal touch ◆
  outer_frame_color=10
  inner_frame_color=9
 
  status="lost"
 
- t=0 
+ t=0
  mt=0
- 
+
  gravity = 640
  submitted = false
  floor = 84
  play_lost_sound = true
- 
+
  daytime = rnd()>0.5 and flr(rnd(2))+1 or 0
- hmm = rnd()>0.95
- bye = rnd()>0.95
  dim = daytime>0 and rnd()>0.7
- pow = 0
- 
- c_r = 0
- c_rl = 100
- 
- -- paper
+
  paper = {
   spr=32,
-  active=true,
+  frame = 33,
  	x=5+rnd(115),
  	y=0,
  	vy=0,
- 	count=0,
  	ground=false,
- 	grab=false,
- 	target=1+difficulty/5,
- 	frame = 33
+ 	grab=false
  }
- 
- -- player
+
  player = {
   x=63,
   y=floor,
@@ -59,39 +48,23 @@ function _init()
   frame=2,
   flip=false
  }
- 
- -- pc
+
  pc = {
   spr=9,
-  x=10+rnd(110),
+  x=10+rnd(100),
   y=floor
  }
- 
- -- journal
+
  journal = {
   spr=round(48+rnd(6))
  }
- 
 end
 
 function _update60()
- --[[
-  dt is time delta, scaled
-  with difficulty, provided by
-  the master cart
- ]]--
  local dt=dt or 1/60
- 
- --[[
-  use dt for all diff.dependent
-  actions, and 1/60 otherwise
- ]]--
  t+=dt
  mt=t*80
- 
- -- animation magic
- --frame=2+flr(5*(2*t%1))
- 
+
  -- "animation magic"
  if player.ground then
   player.frame = 2 + ((player.frame - 2) + abs(player.vx / 128))%4
@@ -106,26 +79,72 @@ function _update60()
    player.frame = 6
   end
  end
- 
+
  paper.frame = paper.spr+1+flr(2*(2*t%1))
- --[[
-  use transition_done to check
-  for on-screen collisions etc;
-  this flag is set to true when
-  the screen transition is over
-  and the game is fully drawn
-  on the screen
- ]]--
+
  if not transition_done then
   return
  end
 
- if paper.active then
- 	update_paper()
- end
- 
+ update_paper()
  update_player(dt)
+end
 
+function _draw()
+ cls(1)
+
+ if daytime == 0 then
+  cls(12)
+  circfill(96, 24, 12, 10)
+ elseif daytime == 1 then
+  cls(0)
+  circfill(96, 24, 12, 7)
+  circfill(86, 24, 12, 0)
+ elseif daytime == 2 then
+  cls(2)
+  circfill(96, 64, 12, 14)
+ end
+
+--[[ disable dim for now
+ if dim then
+  for i = 0, 15 do
+   pal(i, daytime==1 and 13 or 0)
+  end
+ end
+]]--
+
+ -- map
+ local mx=mt%8 -- spr size
+
+ for x=0,16 do
+  spr(1, x*8-mx, 128-5*8)
+  for y=1,4 do
+   spr(0, x*8-mx, 128-y*8)
+  end
+ end
+
+ --pc
+ spr(pc.spr,pc.x,pc.y)
+
+ --paper
+ if paper.ground then
+  spr(paper.frame,paper.x,paper.y)
+ else
+  spr(paper.spr,paper.x,paper.y)
+ end
+
+ --player
+ spr(player.frame,player.x,player.y,1,1,player.flip)
+
+ if status == "won" then
+  win_message()
+ elseif paper.ground then
+  if play_lost_sound then
+   sfx(4)
+   play_lost_sound=false
+  end
+  lost_message()
+ end
 end
 
 function update_player(dt)
@@ -138,7 +157,7 @@ function update_player(dt)
   player.flip = false
   player.vx = 60
  end
- 
+
  -- move
  player.x+=player.vx*dt
  player.y+=player.vy*dt
@@ -147,17 +166,17 @@ function update_player(dt)
  -- slow velocity
  player.vx *= 0.9
  player.vy += gravity * dt
- 
+
  -- if going past ground
  if player.y >= floor then
   -- don't
   player.y = floor
   player.vy = 0
-  
+
   player.ground = true
  end
- 
- -- border collision 
+
+ -- border collision
  if player.x<5 then
   player.vx=0
   player.x=5
@@ -165,95 +184,26 @@ function update_player(dt)
   player.vx=0
   player.x=115
  end
- 
+
  -- paper collision
- if player.y>paper.y 
- 	and player.y<paper.y+10 
+ if player.y>paper.y
+ 	and player.y<paper.y+10
  	and player.x>paper.x-10
  	and player.x<paper.x+10
  then
   paper.vy=0
-  paper.count+=1
   paper.grab=true
-  if paper.count<paper.target
-  then
-   init_paper()
-  end
  end
- 
+
  if paper.grab then
-  if player.x >= pc.x 
-  and player.x <= pc.x + 7 
+  if player.x >= pc.x
+  and player.x <= pc.x + 7
   and player.y <= pc.y + 7 then
    submitted = true
    status = "won"
    sfx(3)
   end
  end
-end
-
-function _draw()
- cls(1)
- 
- if daytime == 0 then
-  cls(12)
-  circfill(96, 24, 12, 10)
- elseif daytime == 1 then
-  cls(0)
-  circfill(96, 24, 12, 7)
-  circfill(86, 24, 12, 0)
- elseif daytime == 2 then
-  cls(2)
-  circfill(96, 64, 12, 14)
- end
- 
- if dim then
-  for i = 0, 15 do
-   pal(i, daytime==1 and 13 or 0)
-  end
- end
- 
- -- map
- local mx=mt%8 -- spr size
- 
- for x=0,16 do
-  spr(1, x*8-mx, 128-5*8)
-  for y=1,4 do 
-   spr(0, x*8-mx, 128-y*8)
-  end
- end
- 
- --pc
- spr(pc.spr,pc.x,pc.y)
- 
- --paper
- if paper.active then
-  if paper.ground then
-   spr(paper.frame,paper.x,paper.y)
-  else
-   spr(paper.spr,paper.x,paper.y)
-  end
- end
- 
- --player
- spr(player.frame,player.x,player.y,1,1,player.flip)
- 
- if status == "won" then
-  win_message()
- elseif paper.ground then
-  if play_lost_sound then
-   sfx(4)
-   play_lost_sound=false
-  end
-  lost_message()
- end
-end
-
-function init_paper()
- paper.x=5+rnd(115)
- paper.y=0
- paper.vy=0
- paper.active=true
 end
 
 function update_paper()
@@ -264,8 +214,8 @@ function update_paper()
   paper.vy+=3*1/60
   paper.y+=paper.vy
  end
- 
- if paper.y >= floor then
+
+ if paper.y >= floor+5 then
   paper.y=floor
   paper.vy=0
   paper.ground=true
@@ -273,21 +223,12 @@ function update_paper()
 end
 
 function win_message()
- c_r += 4
- circ(pc.x+4, pc.y-4, c_r - 16, 8)
- circ(pc.x+4, pc.y-4, c_r - 8, 9)
- circ(pc.x+4, pc.y-4, c_r, 10)
  cls(0)
  spr(journal.spr,63,63-7)
  spr(16,63,63)
 end
 
 function lost_message()
- c_rl -= 4
- circ(paper.x+4, paper.y-4, c_rl - 16, 8)
- circ(paper.x+4, paper.y-4, c_rl - 8, 9)
- circ(paper.x+4, paper.y-4, c_rl, 10)
- 
  cls(0)
  spr(paper.frame, 63+2*8,63)
  player.frame = 20+flr(3*(2*t%1))
@@ -342,11 +283,11 @@ _transitions = {
 
 function _len(str)
  local len=#str
- 
+
  for i=1,#str do
   if(sub(str,i,i)>="█") len+=1
  end
- 
+
  return len
 end
 
@@ -359,7 +300,7 @@ end
 function _init()
  _minigame._init()
  status=nil
- 
+
  assert(name, '"name" variable not declared')
  assert(made_by, '"made_by" variable not declared')
  assert(oneliner, '"oneliner" variable not declared')
@@ -368,12 +309,12 @@ function _init()
  assert(mid(1,15,flr(difficulty))==difficulty, 'difficulty should be a integer number in range 1..8')
 
  _set_difficulty(difficulty)
- 
+
  repeat
   cls()
-  
+
   sspr(77, 123, 51, 5, 64-(13*4), 14, 51*2, 5*2)
-  
+
   cursor(0, 27)
   color(7)
 
@@ -391,7 +332,7 @@ function _init()
   _printc "minigame jam."
   _printc ""
   _printc "to play the full game, visit:"
-  
+
   color(10)
   _printc "is.gd/picoware"
 
@@ -424,7 +365,7 @@ function _update60()
 
  if _playing then
   dt=_speedup/60
-  _game_t-=1/60   
+  _game_t-=1/60
   _minigame._update60()
  end
 end
@@ -441,7 +382,7 @@ function _draw()
 
  -- cull lounge (cool lounge b/)
  if _transitions[2].t<0.99 then
- 
+
   shadow("single mode", 43, 22)
 
   -- jelpi
@@ -460,7 +401,7 @@ function _draw()
   line(89,85)
   line(91,79)
 
-  -- static  
+  -- static
   for x=79,79+13 do for y=60,60+13 do
    pset(x,y,({6,7,13})[ceil(rnd(3))])
   end end
@@ -469,7 +410,7 @@ function _draw()
    if (#str<3) return lpad('0'..str)
    return str
   end
-  
+
   -- score
   shadow(lpad(tostr(_score)), 59, 98)
 
@@ -491,7 +432,7 @@ function _draw()
    local tt=1-_transitions[2].t
 --   local x,y,w=79.5*tt,56.5*tt,128*(1-tt)+14*tt
    local x,y,w=86.5*tt,67.5*tt,128*(1-tt)
-  
+
    __cls=cls
    cls=function(col)
     rectfill(x,y,x+w-1,y+w-1,col)
@@ -512,7 +453,7 @@ function _draw()
    sspr(39, 120, 1, 8,  0,127, 128,-8)
    sspr(32, 127, 8, 1,  0,  0, 8, 128)
    sspr(32, 127, 8, 1,127,  0,-8, 128)
-   
+
    for x=0,1 do for y=0,1 do
     spr(244, x*119, y*119, 1, 1, x==1, y==1)
    end end
@@ -555,7 +496,7 @@ function _finish_game()
   cursor(0, 27)
   color(8)
   _printc "you lost!"
-  
+
   color(7)
   _printc ""
   _printc "now is the perfect time to visit"
@@ -581,7 +522,7 @@ end
 function _set_difficulty(diff)
  difficulty=diff
  _difficulty=diff
- 
+
  _speedup=({1, 1.0995, 1.2065, 1.3219, 1.4475, 1.5850, 1.7370, 1.9069, 2.0995, 2.3219, 2.5850, 2.9069, 3.3219, 3.9069, 4.9069})[diff]
  _time_in_seconds=5/_speedup
 
@@ -592,7 +533,7 @@ end
 
 function _timeout(func, t)
  t+=time()
- 
+
  add(_coroutines, cocreate(function()
   repeat yield() until time() > t
   func()
@@ -608,7 +549,7 @@ _states={
 
   music(62, 0, 4)
   sfx(-1)
-  
+
   local dt=2
 
   if status=="won" then
@@ -628,7 +569,7 @@ _states={
 
    sfx(61)
   end
-  
+
   -- oneliner slide in
   _timeout(function()
    _transitions[1].t=-1
@@ -649,7 +590,7 @@ _states={
   _transitions[2].target=1
 
   music(63, 0, 4)
-   
+
   _timeout(_states[1], _time_in_seconds)
 
   -- one liner slide out
@@ -1066,4 +1007,3 @@ __music__
 00 41424344
 03 3b3c4344
 03 3f3a397c
-
