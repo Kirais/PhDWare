@@ -40,7 +40,7 @@ function _init()
  
   status="won" / status="lost"
  ]]--
- status="won"
+ status="lost"
 
  t=0 
  mt=0
@@ -147,6 +147,7 @@ function update_player(dt)
  then
   hdy=0
   col=true
+  status="won"
  else col=false
  end
  
@@ -175,6 +176,12 @@ function _draw()
  spr(7,hx,hy)
  --player
  spr(frame,x,y)
+ 
+ if status == "won" then
+  win_message()
+ elseif hy>96 then
+  lost_message()
+ end
 end
 
 function update_hat()
@@ -182,9 +189,56 @@ function update_hat()
   hdy+=3*1/60
   hy+=hdy
  end
+end
+
+function win_message()
+ for x=0,16 do
+  for y=0,16 do 
+   spr(0, x*8, y*8)
+  end
+ end
+
+ for y=4,4+4 do
+		spr(1, 1*8, y*8)
+ end
  
- if hy>96 then
-  status="lost"
+ for y=4,6,2 do
+ 	spr(1, 2*8, y*8)
+ end
+ 
+ for y=4,4+2 do
+ 		spr(1, 3*8, y*8)
+ end
+ 
+ for x=5,10,2 do
+  for y=4,4+4 do
+ 		spr(1, x*8, y*8)
+  end
+ end
+ 
+	spr(1, 6*8, 6*8)
+ 
+ for y=4,9,4 do
+ 		spr(1, 10*8, y*8)
+ end
+ 
+ for y=5,5+3 do
+ 	spr(1, 11*8, y*8)
+ end
+ 
+ for y=4,4+2 do
+ 	spr(1, 13*8, y*8)
+ end
+ 
+ spr(1, 13*8, 8*8)
+ 
+end
+
+function lost_message()
+ for x=0,16 do
+  for y=1,16 do 
+   spr(1, x*8, 128-y*8)
+  end
  end
 end
 --------------------------------
